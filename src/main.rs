@@ -49,13 +49,15 @@ async fn main() {
     let config = HomeConfig::new(env!("CARGO_PKG_NAME"), "config.json");
     let mut c = config.parse::<Config>().unwrap_or_default();
 
-    if app.is_present("key") {
-        let key = app.value_of("key").unwrap();
+    // Set API KEY
+    if let Some(key) = app.value_of("key") {
         if key.len() != 32 {
             exit!("Invalid API KEY");
         }
         c.key = key.to_string();
-        config.save(&c).unwrap();
+        config.save(&c).unwrap_or_else(|err| {
+            exit!("{:#?}", err);
+        });
         println!("Set API KEY successfully");
         return;
     }

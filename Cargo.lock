@@ -260,9 +260,9 @@ dependencies = [
 
 [[package]]
 name = "home-config"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de95783fe00958c34f0df3348c74308fde6d3dc4790db3bd96f0e69df960d8a2"
+checksum = "96e34973b51af300ada564fcffe10b88c896ce296f6e35e6e55c2e6e8b5f4e7a"
 dependencies = [
  "dirs",
  "serde",
@@ -790,7 +790,7 @@ checksum = "b1141d4d61095b28419e22cb0bbf02755f5e54e0526f97f1e3d1d160e60885fb"
 
 [[package]]
 name = "tinypng"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "futures-util",
