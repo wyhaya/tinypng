@@ -22,7 +22,7 @@ cargo install tinypng
 ```sh
 tinypng -k <KEY>
 # Set API KEY successfully
-# Your key is stored in ~/.config/tinypng/config.json
+# Your key is stored in ~/.config/tinypng/config.toml
 ```
 
 3. Compress images

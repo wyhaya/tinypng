@@ -35,9 +35,10 @@ pub struct TinyPng {
     client: Client,
 }
 
-impl TinyPng {
-    const API_URL: &'static str = "https://api.tinify.com/shrink";
+pub const REGISTER_URL: &str = "https://tinypng.com/developers";
+pub const API_URL: &str = "https://api.tinify.com/shrink";
 
+impl TinyPng {
     pub fn new<T: ToString>(key: T) -> Self {
         Self {
             key: key.to_string(),
@@ -55,7 +56,7 @@ impl TinyPng {
 
         let res = self
             .client
-            .post(Self::API_URL)
+            .post(API_URL)
             .basic_auth("api", Some(self.key.as_str()))
             .body(Body::from(file))
             .send()

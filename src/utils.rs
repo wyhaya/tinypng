@@ -1,3 +1,14 @@
+#[macro_export]
+macro_rules! exit {
+    ($($arg:tt)*) => {
+       {
+            eprint!("Error: ");
+            eprintln!($($arg)*);
+            std::process::exit(1)
+       }
+    };
+}
+
 pub fn format_size(n: u64) -> String {
     const UNITS: [char; 6] = ['K', 'M', 'G', 'T', 'P', 'E'];
     if n < 1024 {

@@ -4,7 +4,7 @@ use clap::{Arg, Command};
 use futures_util::future::join_all;
 use glob::{glob, GlobError};
 use home_config::HomeConfig;
-use lib::TinyPng;
+use lib::{TinyPng, REGISTER_URL};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -13,17 +13,6 @@ use utils::format_size;
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct Config {
     key: String,
-}
-
-#[macro_export]
-macro_rules! exit {
-    ($($arg:tt)*) => {
-       {
-            eprint!("Error: ");
-            eprintln!($($arg)*);
-            std::process::exit(1)
-       }
-    };
 }
 
 #[tokio::main]
@@ -46,27 +35,27 @@ async fn main() {
         )
         .get_matches();
 
-    let config = HomeConfig::new(env!("CARGO_PKG_NAME"), "config.json");
-    let mut c = config.parse::<Config>().unwrap_or_default();
+    let hc = HomeConfig::new(env!("CARGO_PKG_NAME"), "config.toml");
+    let mut config = hc.toml::<Config>().unwrap_or_default();
 
     // Set API KEY
     if let Some(key) = app.value_of("key") {
         if key.len() != 32 {
             exit!("Invalid API KEY");
         }
-        c.key = key.to_string();
-        config.save(&c).unwrap_or_else(|err| {
+        config.key = key.to_string();
+        hc.save_toml(&config).unwrap_or_else(|err| {
             exit!("{:#?}", err);
         });
         println!("Set API KEY successfully");
         return;
     }
 
-    if c.key.len() != 32 {
-        exit!("Please use 'tinypng -k <KEY>' to set TinyPNG API_KEY\nLink: https://tinypng.com/developers");
+    if config.key.len() != 32 {
+        exit!("Invalid API KEY\n1. Register a KEY using your email at {REGISTER_URL}\n2. Use 'tinypng -k <KEY>' to set API_KEY");
     }
 
-    let tiny = Arc::new(TinyPng::new(c.key));
+    let tiny = Arc::new(TinyPng::new(config.key));
 
     let paths = app
         .values_of("image")
