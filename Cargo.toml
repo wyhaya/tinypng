@@ -1,0 +1,29 @@
+[package]
+name = "tinypng"
+version = "0.3.0"
+edition = "2021"
+description = "Command line tool for compressing images using the TinyPNG API"
+homepage = "https://github.com/wyhaya/tinypng"
+repository = "https://github.com/wyhaya/tinypng.git"
+license = "MIT"
+readme = "README.md"
+keywords = [
+    "TinyPNG",
+    "images",
+    "compress",
+    "command-line-tool"
+]
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = "symbols"
+
+[dependencies]
+tokio = { version = "1.21.2", features = ["rt-multi-thread", "macros", "fs"] }
+reqwest = { version = "0.11.12", features = ["stream"] }
+serde = { version = "1.0.147", features = ["derive"] }
+clap = "3.2.23"
+glob = "0.3.0"
+futures-util = "0.3.25"
+home-config = { version = "0.6.0", features = ["toml"] }
