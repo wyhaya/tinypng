@@ -1,9 +1,10 @@
 mod utils;
 use clap::{Arg, Command};
-use futures_util::future::join_all;
-use glob::{glob, GlobError};
+use futures_util::stream::{FuturesUnordered, StreamExt};
+use glob::glob;
 use home_config::HomeConfig;
 use serde::{Deserialize, Serialize};
+use std::collections::VecDeque;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tinypng::{TinyPng, REGISTER_URL};
@@ -56,7 +57,7 @@ async fn main() {
 
     let tiny = Arc::new(TinyPng::new(config.key));
 
-    let paths = app
+    let mut paths = app
         .values_of("image")
         .unwrap()
         .flat_map(|val| {
@@ -64,18 +65,40 @@ async fn main() {
                 exit!("{:#?}", err);
             })
         })
-        .collect::<Result<Vec<PathBuf>, GlobError>>()
-        .unwrap_or_else(|err| {
-            exit!("{:#?}", err);
-        });
+        .filter_map(|rst| match rst {
+            Ok(p) => {
+                if p.is_file() {
+                    Some(p)
+                } else {
+                    None
+                }
+            }
+            Err(err) => {
+                exit!("{:#?}", err)
+            }
+        })
+        .collect::<VecDeque<PathBuf>>();
 
-    let mut fus = Vec::with_capacity(paths.len());
+    let mut fus = FuturesUnordered::new();
 
-    for p in paths {
-        let tiny = tiny.clone();
-        let f = async move {
-            let rst = tiny.compress_file(&p, &p).await;
-            match rst {
+    let task = |tiny: Arc<TinyPng>, p: PathBuf| {
+        tokio::spawn(async move { (tiny.compress_file(&p, &p).await, p) })
+    };
+
+    // Maximum number of tasks to run simultaneously
+    let n = paths.len().min(8);
+
+    for _ in 0..n {
+        let p = paths.pop_front().unwrap();
+        fus.push(task(tiny.clone(), p));
+    }
+
+    while let Some(rst) = fus.next().await {
+        if let Some(p) = paths.pop_front() {
+            fus.push(task(tiny.clone(), p));
+        }
+        match rst {
+            Ok((rst, p)) => match rst {
                 Ok((input, output)) => {
                     let ratio = (1.0 - (output as f32 / input as f32)) * 100.0;
                     let (input, output) = (format_size(input), format_size(output));
@@ -87,13 +110,13 @@ async fn main() {
                         ratio
                     );
                 }
-                Err(e) => {
-                    eprintln!("{}: {:?}", p.display(), e);
+                Err(err) => {
+                    eprintln!("{}: {:?}", p.display(), err);
                 }
-            };
-        };
-        fus.push(f);
+            },
+            Err(err) => {
+                eprintln!("Failed to run task {:?}", err);
+            }
+        }
     }
-
-    join_all(fus).await;
 }

@@ -29,8 +29,9 @@ tinypng -k <KEY>
 
 ```sh
 tinypng ./test.png
-# Origin: 1004.7 KB Compressed: 245.4 KB(75.6%)
+# test.png: Origin: 1004.7 KB Compressed: 245.4 KB(75.6%)
 
 # Glob
-tinypng './images/**.png'
+tinypng ./images/*.png
+# images/test.png: Origin: 1.4 MB Compressed: 174.5 KB(87.8%)
 ```
