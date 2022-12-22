@@ -1,5 +1,5 @@
 
-# tinypng [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/wyhaya/tinypng/Build?style=flat-square)](https://github.com/wyhaya/tinypng/actions) [![Crates.io](https://img.shields.io/crates/v/tinypng.svg?style=flat-square)](https://crates.io/crates/tinypng)
+# tinypng [![Crates.io](https://img.shields.io/crates/v/tinypng.svg?style=flat-square)](https://crates.io/crates/tinypng)
 
 Command line tool for compressing images using the TinyPNG API
 
